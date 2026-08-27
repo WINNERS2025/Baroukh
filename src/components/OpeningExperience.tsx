@@ -72,7 +72,7 @@ export function OpeningExperience({
         className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden"
       >
         <video
-          ref={videoRef}
+
           src="/videos/opening.mp4"
           autoPlay
           playsInline
