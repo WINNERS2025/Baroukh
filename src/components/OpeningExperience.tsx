@@ -73,7 +73,7 @@ export function OpeningExperience({
       >
         <video
           ref={videoRef}
-          src={VIDEO_SRC}
+          src="/videos/opening.mp4"
           autoPlay
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
