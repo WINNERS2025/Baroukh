@@ -10,6 +10,8 @@ interface OpeningExperienceProps {
   mode: 'video' | 'journey';
   /** Current step index for journey mode (controlled by parent keyboard handler) */
   manualStep?: number;
+  /** Incremented by parent when the presenter clicks the presentation toggle during video mode; triggers video.play() */
+  playSignal?: number;
 }
 
 type Phase = 'video' | 'journey';
@@ -26,19 +28,21 @@ const JOURNEY_INTRO_STEPS: { text: string; stationIndex: number | null }[] = [
   { text: 'وفي النهاية...\nعندنا تحدي كبير!', stationIndex: null },
 ];
 
-const VIDEO_SRC = '/videos/opening.mp4';
+const VIDEO_SRC = '/videos/هدم_سور_(1).mp4';
 
 export function OpeningExperience({
   onComplete,
   mode,
   manualStep = 0,
+  playSignal = 0,
 }: OpeningExperienceProps) {
   const [phase, setPhase] = useState<Phase>(mode);
   const [journeyStep, setJourneyStep] = useState(0);
   const [showFinalButton, setShowFinalButton] = useState(false);
+  const [videoStarted, setVideoStarted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // --- Video phase: fully automatic, no controls ---
+  // --- Video phase: listen for ended event to proceed ---
   useEffect(() => {
     if (phase !== 'video') return;
     const video = videoRef.current;
@@ -52,6 +56,14 @@ export function OpeningExperience({
     return () => video.removeEventListener('ended', handleEnded);
   }, [phase, onComplete]);
 
+  // --- Video phase: start playback when presenter triggers playSignal ---
+  useEffect(() => {
+    if (phase !== 'video' || playSignal === 0) return;
+    const video = videoRef.current;
+    if (!video) return;
+    video.play().then(() => setVideoStarted(true)).catch(() => {});
+  }, [playSignal, phase]);
+
   // --- Journey phase: sync local step with parent-controlled index ---
   useEffect(() => {
     if (phase !== 'journey') return;
@@ -63,7 +75,7 @@ export function OpeningExperience({
     }
   }, [manualStep, phase]);
 
-  // --- Video Phase: fully automatic, no UI controls ---
+  // --- Video Phase: no controls, hint overlay before playback starts ---
   if (phase === 'video') {
     return (
       <motion.div
@@ -72,12 +84,38 @@ export function OpeningExperience({
         className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden"
       >
         <video
-
-          src="/videos/opening.mp4"
-          autoPlay
+          ref={videoRef}
+          src={VIDEO_SRC}
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
         />
+        <AnimatePresence>
+          {!videoStarted && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-10 pointer-events-none"
+            >
+              <motion.div
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="text-center"
+              >
+                <p className="font-display text-2xl md:text-4xl font-black text-gold-400 mb-2" style={{ textShadow: '0 4px 20px rgba(0,0,0,0.8)' }}>
+                  📜 رحلة باروخ
+                </p>
+                <p className="font-display text-lg md:text-xl font-bold text-gold-200/80 mb-6">
+                  من الحزن إلى الرجاء
+                </p>
+                <p className="font-display text-base md:text-lg font-bold text-white/90">
+                  اضغط «وضع العرض» لبدء العرض
+                </p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     );
   }

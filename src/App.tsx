@@ -109,6 +109,7 @@ export default function App() {
   const [finalScore, setFinalScore] = useState(0);
   const [mapRevealStep, setMapRevealStep] = useState(0);
   const [gameCompleted, setGameCompleted] = useState(false);
+  const [videoPlaySignal, setVideoPlaySignal] = useState(0);
 
   const completedCount = progress.completedStations.length;
   const finalUnlocked = completedCount === stations.length;
@@ -838,6 +839,7 @@ export default function App() {
           <OpeningExperience
             key="opening"
             mode="video"
+            playSignal={videoPlaySignal}
             onComplete={() => {
               setView('journey-intro');
               setJourneyIntroStep(0);
@@ -899,7 +901,13 @@ export default function App() {
       {/* Presentation controls overlay */}
       <PresentationControls
         presentationMode={presentationMode}
-        onTogglePresentationMode={() => setPresentationMode((p) => !p)}
+        onTogglePresentationMode={() => {
+          if (view === 'opening') {
+            setVideoPlaySignal((s) => s + 1);
+          } else {
+            setPresentationMode((p) => !p);
+          }
+        }}
         showHint={view !== 'opening' && view !== 'journey-intro'}
       />
 
