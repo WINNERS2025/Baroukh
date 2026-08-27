@@ -26,7 +26,7 @@ const JOURNEY_INTRO_STEPS: { text: string; stationIndex: number | null }[] = [
   { text: 'وفي النهاية...\nعندنا تحدي كبير!', stationIndex: null },
 ];
 
-const VIDEO_SRC = '/videos/هدم_سور_(1).mp4';
+const VIDEO_SRC = '/videos/opening.mp4';
 
 export function OpeningExperience({
   onComplete,
